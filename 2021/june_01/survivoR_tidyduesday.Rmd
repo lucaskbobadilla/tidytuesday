@@ -5,5 +5,53 @@ date: "6/01/2021"
 output: html_document
 ---
 
-## Data description
+## Packages
+
+```{r include=FALSE}
+library(tidyverse)
+library(tidytuesdayR)
+library(patchwork)
+library(ggridges)
+```
+
+
+## Data
+
+If necessary install the package `tidyTuesdayR` to get the data using `install.packages("tidytuesdayR")`:
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# tuesdata <- tidytuesdayR::tt_load(2021, week = 23) # get dataset
+tuesdata <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/summary.csv')
+```
+
+### Data structure and cleaning
+
+```{r}
+# data structure
+glimpse(tuesdata)
+
+# to factor
+tuesdata$country <- factor(tuesdata$country)
+
+```
+
+```{r}
+# plot 1 - heatmap with countries with more programs
+tuesdata %>% 
+  group_by(country) %>% 
+  summarize(count = n())
+
+# number of times each winner participates
+tuesdata %>% 
+  group_by(factor(full_name)) %>% 
+  summarize(count = n())
+
+# get each season length
+
+tuesdata <- tuesdata %>% 
+  mutate(season_length = ended - premiered,
+         filming_length = filming_ended - filming_started)
+
+
+```
 
