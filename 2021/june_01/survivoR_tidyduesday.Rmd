@@ -1,0 +1,9 @@
+---
+title: "TidyTuesday"
+author: "Lucas Kopecky Bobadilla"
+date: "6/01/2021"
+output: html_document
+---
+
+## Data description
+
