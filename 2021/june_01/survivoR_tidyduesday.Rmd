@@ -22,37 +22,72 @@ library(survivoR)
 If necessary install the package `tidyTuesdayR` to get the data using `install.packages("tidytuesdayR")`:
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-tuesdata <- tidytuesdayR::tt_load(2021, week = 23) # get dataset
-tuesdata <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/summary.csv')
+
+summ_df<- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/summary.csv')
+
+chall_df<- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/challenges.csv')
+
+cast_df <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/castaways.csv')
+
+viewers_df <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/viewers.csv')
+
+jury_votes_df <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/jury_votes.csv')
 ```
 
 ### Data structure and cleaning
 
 ```{r}
 # data structure
-glimpse(tuesdata)
+glimpse(summ_df)
 
 # to factor
-tuesdata$country <- factor(tuesdata$country)
+summ_df$country <- factor(summ_df$country)
 
 ```
 
 ```{r}
 # plot 1 - heatmap with countries with more programs
-tuesdata %>% 
+summ_df %>% 
   group_by(country) %>% 
   summarize(count = n())
 
 # number of times each winner participates
-tuesdata %>% 
+summ_df %>% 
   group_by(factor(full_name)) %>% 
   summarize(count = n())
 
 # get each season length
 
-tuesdata <- tuesdata %>% 
+summ_df <- summ_df %>% 
   mutate(season_length = ended - premiered,
          filming_length = filming_ended - filming_started)
+
+
+```
+
+```{r}
+# map
+library("rnaturalearth")
+library("rnaturalearthdata")
+library("ggspatial")
+library(ggthemes)
+library(ggrepel)
+world <- map_data("world")
+
+world <- world %>% 
+  full_join(summ_df %>% 
+  group_by(country) %>% 
+  summarize(season = n()) %>% 
+    rename(region = country)) %>% 
+  mutate(`Total of seasons` = if_else(is.na(as.double(season)), 0,as.double(season)))
+
+map <- ggplot() +
+  geom_map(data = world, map = world,
+    aes(long, lat, map_id = region, fill = `Total of seasons`), color = "grey") +
+  scale_fill_gradient(low="grey", high="red", breaks=c(0,2,5,9)) +
+  labs(title = "Survivor: Season locations") +
+  theme_wsj()
+
 
 
 ```
