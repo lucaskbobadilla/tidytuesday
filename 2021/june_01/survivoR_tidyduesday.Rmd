@@ -86,9 +86,41 @@ map <- ggplot() +
     aes(long, lat, map_id = region, fill = `Total of seasons`), color = "grey") +
   scale_fill_gradient(low="grey", high="red", breaks=c(0,2,5,9)) +
   labs(title = "Survivor: Season locations") +
-  theme_wsj()
+  theme_wsj() +
+  theme(legend.box.just = "right")
 
 
+
+```
+
+```{r}
+# challenges
+
+glimpse(chall_df)
+
+fac <- c('season_name', "title","episode","season","winners", "winning_tribe", "challenge_type")
+chall_df[fac] <- lapply(chall_df[fac], factor)
+
+chall_df %>% 
+  group_by(season, winners, challenge_type) %>%
+  summarize(count = n()) %>% 
+  arrange(season, challenge_type, desc(count)) %>% 
+  group_by(season, challenge_type) %>% 
+  filter(count == max(count)) %>% 
+  distinct(season, .keep_all = T) %>% 
+  full_join(summ_df %>% 
+              mutate(season = factor(season)) %>% 
+                       select(season, season_winner = winner)) %>% 
+  mutate(was_winner = if_else(winners == season_winner,1,0)) %>% 
+  ggplot(aes(y = season, x = was_winner)) + 
+  geom_text(aes(label = winners, col = factor(was_winner)), face ="bold", show.legend = FALSE) + 
+  geom_point(alpha = 0, aes(y = season, x = was_winner, col = factor(was_winner))) +
+               facet_grid(.~challenge_type) +
+  guides(colour = guide_legend("Season winner", override.aes = list(size = 2, alpha = 1))) +
+  labs(x = "", title = "Survivor challenges winners: Were they the season winners?") +
+  theme(legend.position = "top")
+  
+  
 
 ```
 
